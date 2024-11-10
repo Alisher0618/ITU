@@ -68,7 +68,9 @@ class PaintView(Gtk.Window):
         
         main_grid = Gtk.Grid()        
         
-        # Left Panel: Color palette and color picker
+        #
+        #   LEFT PANEL: COLOR PALETTE AND COLOR PICKER
+        #
         left_panel = Gtk.Box(spacing=0)
         left_panel.set_size_request(200, 1030)
         left_panel.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(1, 1, 1, 1))  # Light gray
@@ -107,31 +109,31 @@ class PaintView(Gtk.Window):
             
         left_panel.pack_start(grid, False, False, 0)
         
-        # Custom color picker in left panel
+        #
+        #   CUSTOM COLOR PICKER
+        #
         color_button = Gtk.ColorButton()
         color_button.set_rgba(controller.get_color())  # Fetch the color from the controller
         color_button.connect("color-set", self.controller.on_color_set)
         color_button.set_margin_top(100)
         grid.attach(color_button, tmp_col-3, tmp_row+2, 4, 1)
         
-        # Top Panel: Tools
+        #
+        #   TOP PANEL: TOOLS
+        #
         top_panel = Gtk.Box(spacing=0)
         top_panel.set_size_request(1690, 50)
         top_panel.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(1, 1, 1, 1))
         top_panel.get_style_context().add_class("top-box")
-        
-        tools_grid = Gtk.Grid(column_spacing=5)
-        button1 = Gtk.Button(label="pencil")
-        
+
+        tools_grid = Gtk.Grid(column_spacing=5, row_spacing=5)
+        button1 = Gtk.Button(label="pencil")  
         button2 = Gtk.Button(label="rubber")
-        
-        button3 = Gtk.Button(label="bruh")
-        
-        
+        button3 = Gtk.Button(label="bruh")       
         #
         #   BRUSH BUTTON
         #
-        tools_grid.add(button1)
+        tools_grid.attach(button1, 1, 0, 1, 1)
         button1.set_name(button1.get_label().lower())
         button1.connect("clicked", self.pencil_button_clicked)
         self.tools_button["pencil"] = button1
@@ -139,29 +141,32 @@ class PaintView(Gtk.Window):
         #
         #   RUBBER BUTTON
         #
-        tools_grid.attach(button2, 1, 0, 1, 1)
+        tools_grid.attach(button2, 2, 0, 1, 1)
         button2.set_name(button1.get_label().lower())
-        button2.connect("clicked", self.pencil_button_clicked)
+        button2.connect("clicked", self.rubber_button_clicked)
         self.tools_button["rubber"] = button2
-        
-        #
-        #   BRUH BUTTON
-        #
-        tools_grid.attach(button3, 2, 0, 1, 1)
-        button3.set_name(button1.get_label().lower())
-        button3.connect("clicked", self.pencil_button_clicked)
-        self.tools_button["bruh"] = button3
         
         #
         #   SPIN BUTTON (FOR CHANGING SIZE OF BRUSH)
         #        
-        adjustment = Gtk.Adjustment(value=1, lower=1, upper=20, step_increment=1, page_increment=5)
+        adjustment1 = Gtk.Adjustment(value=1, lower=1, upper=20, step_increment=1, page_increment=5)
         spin_button = Gtk.SpinButton()
-        spin_button.set_adjustment(adjustment)
+        spin_button.set_adjustment(adjustment1)
         spin_button.set_value(controller.get_brush_size())
         spin_button.connect("value-changed", self.controller.on_brush_size_changed)
-        tools_grid.attach(spin_button, 3, 0, 1, 1)
+        tools_grid.attach(spin_button, 1, 1, 1, 1)
         #spin_button.set_digits(0)  # Количество десятичных знаков
+        
+        #
+        #   SPIN BUTTON (FOR CHANGING SIZE OF RUBBER)
+        #        
+        adjustment2 = Gtk.Adjustment(value=5, lower=5, upper=50, step_increment=5, page_increment=5)
+        rubber = Gtk.SpinButton()
+        rubber.set_adjustment(adjustment2)
+        rubber.set_value(controller.get_rubber_size())
+        rubber.connect("value-changed", self.controller.on_rubber_size_changed)
+        tools_grid.attach(rubber, 2, 1, 1, 1)
+        #rubber.set_digits(0)  # Количество десятичных знаков
         
         #
         #   CLEAR CANVAS BUTTON
@@ -246,9 +251,14 @@ class PaintView(Gtk.Window):
         """Handle color button clicks to set the brush color."""
         self.controller.set_color(color)
         
-        # Reset all button borders
+        # Reset all color button borders
         for name, btn in self.color_buttons.items():
             btn.get_style_context().remove_class("dotted-border")
+            
+         # Reset all tool button borders
+        for name, btn in self.tools_button.items():
+            if(btn.get_label() != "pencil"):
+                btn.get_style_context().remove_class("dotted-border")
         
         # Apply dotted border to the clicked button
         button.get_style_context().add_class("dotted-border")
@@ -272,8 +282,31 @@ class PaintView(Gtk.Window):
     def pencil_button_clicked(self, button):
         self.controller.clicked_pencil(button.get_label())
     
-        # Reset all button borders
+        # Reset all tool button borders
         for name, btn in self.tools_button.items():
+            btn.get_style_context().remove_class("dotted-border")
+            
+        # Apply dotted border to the clicked button
+        button.get_style_context().add_class("dotted-border")
+
+        # Update CSS for dotted border
+        css_provider = Gtk.CssProvider()
+        css_data = b"""
+            .dotted-border {
+                border: 2px solid black;
+            }
+        """
+        css_provider.load_from_data(css_data)
+        Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), css_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER)
+
+    def rubber_button_clicked(self, button):
+        self.controller.clicked_rubber()
+        
+        # Reset all tool button borders
+        for name, btn in self.tools_button.items():
+            btn.get_style_context().remove_class("dotted-border")
+            
+        for name, btn in self.color_buttons.items():
             btn.get_style_context().remove_class("dotted-border")
         
         # Apply dotted border to the clicked button
@@ -288,6 +321,7 @@ class PaintView(Gtk.Window):
         """
         css_provider.load_from_data(css_data)
         Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), css_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER)
+
 
 
     def on_save_button_clicked(self, button):
