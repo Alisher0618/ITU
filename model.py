@@ -8,26 +8,28 @@ class PaintModel:
         self.color = Gdk.RGBA(0, 0, 0, 1)  # Default color: black
         self.color1 = Gdk.RGBA(0, 0, 0, 1)  # Default color: black
         self.brush_size = 5  # Default brush size
+        self.pencil = 0
         
     def on_draw(self, cr):
         """Draw all lines and the current line."""
-        for line, color, size in self.get_lines():
-            cr.set_source_rgba(color.red, color.green, color.blue, color.alpha)
-            cr.set_line_width(size)
-            cr.move_to(line[0][0], line[0][1])
-            for point in line[1:]:
-                cr.line_to(point[0], point[1])
-            cr.stroke()
-            #cr.fill()# - check this nice shit
+        if(self.pencil == 1):
+            for line, color, size in self.get_lines():
+                cr.set_source_rgba(color.red, color.green, color.blue, color.alpha)
+                cr.set_line_width(size)
+                cr.move_to(line[0][0], line[0][1])
+                for point in line[1:]:
+                    cr.line_to(point[0], point[1])
+                cr.stroke()
+                #cr.fill()# - check this nice shit
 
-        # Draw the current line
-        if self.current_line:
-            cr.set_source_rgba(self.color.red, self.color.green, self.color.blue, self.color.alpha)
-            cr.set_line_width(self.brush_size)
-            cr.move_to(self.current_line[0][0], self.current_line[0][1])
-            for point in self.current_line[1:]:
-                cr.line_to(point[0], point[1])
-            cr.stroke()
+            # Draw the current line
+            if self.current_line:
+                cr.set_source_rgba(self.color.red, self.color.green, self.color.blue, self.color.alpha)
+                cr.set_line_width(self.brush_size)
+                cr.move_to(self.current_line[0][0], self.current_line[0][1])
+                for point in self.current_line[1:]:
+                    cr.line_to(point[0], point[1])
+                cr.stroke()
         
     def fill_button(self, area, cr, user_data):
         """Draw the color rectangle in the button."""
@@ -70,4 +72,4 @@ class PaintModel:
     
     def clear_canvas(self):
         """Clear all points from the canvas."""
-        self.points = []
+        self.lines = []

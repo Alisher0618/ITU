@@ -6,47 +6,42 @@ class PaintController:
         self.view = view
 
     def on_draw(self, widget, cr):
-        self.model.on_draw(cr)
         """Draw all lines and the current line."""
-        """for line, color, size in self.model.get_lines():
-            cr.set_source_rgba(color.red, color.green, color.blue, color.alpha)
-            cr.set_line_width(size)
-            cr.move_to(line[0][0], line[0][1])
-            for point in line[1:]:
-                cr.line_to(point[0], point[1])
-            cr.stroke()
-            #cr.fill()# - check this nice shit
-
-        # Draw the current line
-        if self.model.current_line:
-            cr.set_source_rgba(self.model.color.red, self.model.color.green, self.model.color.blue, self.model.color.alpha)
-            cr.set_line_width(self.model.brush_size)
-            cr.move_to(self.model.current_line[0][0], self.model.current_line[0][1])
-            for point in self.model.current_line[1:]:
-                cr.line_to(point[0], point[1])
-            cr.stroke()
-            """
+        if(self.model.pencil == 1):
+            self.model.on_draw(cr)
+        else:
+            return
+        
             
     def fill_button(self, area, cr, user_data):
         self.model.fill_button(area, cr, user_data)
 
     def on_button_press(self, widget, event):
         """Start drawing a line."""
-        if event.button == 1:  # Left mouse button
-            self.model.start_line(event.x, event.y)
-            self.view.queue_draw()
+        if(self.model.pencil == 1):
+            if event.button == 1:  # Left mouse button
+                self.model.start_line(event.x, event.y)
+                self.view.queue_draw()
+        else:
+            return
 
     def on_button_release(self, widget, event):
         """Finish drawing a line."""
-        if event.button == 1:  # Left mouse button
-            self.model.end_line(event.x, event.y)
-            self.view.queue_draw()
+        if(self.model.pencil == 1):
+            if event.button == 1:  # Left mouse button
+                self.model.end_line(event.x, event.y)
+                self.view.queue_draw()
+        else:
+            return
 
     def on_mouse_move(self, widget, event):
         """Draw as the mouse moves."""
-        if self.model.current_line:
-            self.model.add_point(event.x, event.y)
-            self.view.queue_draw()
+        if(self.model.pencil == 1):
+            if self.model.current_line:
+                self.model.add_point(event.x, event.y)
+                self.view.queue_draw()
+        else:
+            return
 
     def on_color_set(self, widget):
         """Update the brush color from the color button."""
@@ -76,3 +71,10 @@ class PaintController:
     def get_brush_size(self):
         """Return current brush size."""
         return self.model.brush_size
+    
+    def clicked_pencil(self, value):
+        if(self.model.pencil == 1):
+            if(value != "pencil"):
+                self.model.pencil = 0
+        else:
+            self.model.pencil = 1

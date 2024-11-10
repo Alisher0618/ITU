@@ -4,17 +4,18 @@ from gi.repository import Gtk, Gdk
 
 class PaintView(Gtk.Window):
     def __init__(self, controller):
-        super().__init__(title="Paint App")
+        super().__init__(title="Draw Easy")
         self.set_default_size(1920, 1000)
         self.controller = controller
+        
          # Переключение в полноэкранный режим
         #self.fullscreen()
 
         # Создаем заголовочную панель
         header = Gtk.HeaderBar()
-        header.set_show_close_button(True)       # Показывает кнопку закрытия
-        header.props.title = "Paint App"         # Заголовок
-        self.set_titlebar(header)                # Устанавливаем header как заголовок окна
+        header.set_show_close_button(True)       
+        header.props.title = "Draw Easy"         
+        self.set_titlebar(header)                
 
         # Добавляем кнопки в заголовок
         save_button = Gtk.Button(label="Сохранить")
@@ -58,7 +59,8 @@ class PaintView(Gtk.Window):
 
     
         self.color_buttons = {}
-        
+        self.tools_button = {}
+            
         # Main horizontal box to contain left, center, and right sections
         main_box = Gtk.Box(spacing=0)
         main_box.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(0, 0, 0, 0.2))  # Light gray
@@ -73,8 +75,6 @@ class PaintView(Gtk.Window):
         left_panel.get_style_context().add_class("left-panel")
     
         main_grid.attach(left_panel, 0, 0, 1, 206)
-        
-        
         
         
         grid = Gtk.Grid()
@@ -120,6 +120,57 @@ class PaintView(Gtk.Window):
         top_panel.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(1, 1, 1, 1))
         top_panel.get_style_context().add_class("top-box")
         
+        tools_grid = Gtk.Grid(column_spacing=5)
+        button1 = Gtk.Button(label="pencil")
+        
+        button2 = Gtk.Button(label="rubber")
+        
+        button3 = Gtk.Button(label="bruh")
+        
+        
+        #
+        #   BRUSH BUTTON
+        #
+        tools_grid.add(button1)
+        button1.set_name(button1.get_label().lower())
+        button1.connect("clicked", self.pencil_button_clicked)
+        self.tools_button["pencil"] = button1
+        
+        #
+        #   RUBBER BUTTON
+        #
+        tools_grid.attach(button2, 1, 0, 1, 1)
+        button2.set_name(button1.get_label().lower())
+        button2.connect("clicked", self.pencil_button_clicked)
+        self.tools_button["rubber"] = button2
+        
+        #
+        #   BRUH BUTTON
+        #
+        tools_grid.attach(button3, 2, 0, 1, 1)
+        button3.set_name(button1.get_label().lower())
+        button3.connect("clicked", self.pencil_button_clicked)
+        self.tools_button["bruh"] = button3
+        
+        #
+        #   SPIN BUTTON (FOR CHANGING SIZE OF BRUSH)
+        #        
+        adjustment = Gtk.Adjustment(value=1, lower=1, upper=20, step_increment=1, page_increment=5)
+        spin_button = Gtk.SpinButton()
+        spin_button.set_adjustment(adjustment)
+        spin_button.set_value(controller.get_brush_size())
+        spin_button.connect("value-changed", self.controller.on_brush_size_changed)
+        tools_grid.attach(spin_button, 3, 0, 1, 1)
+        #spin_button.set_digits(0)  # Количество десятичных знаков
+        
+        #
+        #   CLEAR CANVAS BUTTON
+        #
+        clear_button = Gtk.Button(label="Clear Canvas")
+        clear_button.connect("clicked", self.controller.on_clear_canvas)
+        tools_grid.attach(clear_button, 4, 0, 1, 1)
+        
+        top_panel.pack_start(tools_grid, False, False, 0)
         main_grid.attach(top_panel, 1, 0, 338, 9)
         
         central_panel = Gtk.Box(spacing=0)
@@ -136,55 +187,17 @@ class PaintView(Gtk.Window):
             Gdk.EventMask.BUTTON_RELEASE_MASK |
             Gdk.EventMask.POINTER_MOTION_MASK
         )
+
         self.drawing_area.connect("draw", self.controller.on_draw)
         self.drawing_area.connect("button-press-event", self.controller.on_button_press)
         self.drawing_area.connect("button-release-event", self.controller.on_button_release)
         self.drawing_area.connect("motion-notify-event", self.controller.on_mouse_move)
-        
+    
         main_grid.attach(self.drawing_area, 3, 11, 335, 194)
         
         
         #END OF GRID
         main_box.pack_start(main_grid, False, False, 0)
-        
-        
-        """grid1 = Gtk.Grid()
-        grid1.set_row_spacing(5)
-        grid1.set_column_spacing(5) 
-        
-        button1 = Gtk.Button(label="1")
-        button2 = Gtk.Button(label="2")
-        button3 = Gtk.Button(label="3")
-        button4 = Gtk.Button(label="4")
-        button5 = Gtk.Button(label="5")
-    
-        grid1.add(button1)
-        grid1.attach(button2, 1, 0, 1, 1)
-        grid1.attach(button3, 2, 0, 1, 1)
-        grid1.attach(button4, 0, 1, 1, 1)
-        grid1.attach_next_to(button5, button2, Gtk.PositionType.BOTTOM, 2, 1)
-        
-        top_panel.pack_start(grid1, False, False, 0)"""
-
-        
-        """button1 = Gtk.Button(label="1")
-        button2 = Gtk.Button(label="2")
-        button3 = Gtk.Button(label="3")
-        button4 = Gtk.Button(label="4")
-        button5 = Gtk.Button(label="5")
-    
-        grid.add(button1)
-        grid.attach(button2, 1, 0, 1, 1)
-        grid.attach(button3, 2, 0, 1, 1)
-        grid.attach(button4, 0, 1, 1, 1)
-        grid.attach_next_to(button5, button2, Gtk.PositionType.BOTTOM, 2, 1)"""
-        #color_palette_grid.attach(button3, 1, 1, 1, 1)
-        
-       
-        
-        #left_box = Gtk.Box(spacing=0)
-        #left_panel.pack_start(left_box, False, False, 50)
-        
         
         css_provider = Gtk.CssProvider()
         css_provider.load_from_data(b"""
@@ -208,9 +221,7 @@ class PaintView(Gtk.Window):
                 border-radius: 10px;
                 background-color: #d3d3d3;
                 padding: 10px;
-            }
-        
-            
+            }      
         """)
         Gtk.StyleContext.add_provider_for_screen(
             Gdk.Screen.get_default(),
@@ -257,7 +268,27 @@ class PaintView(Gtk.Window):
             if color == i[1][1]:
                 print("clicked:", i[1][0])
                 break
-            
+        
+    def pencil_button_clicked(self, button):
+        self.controller.clicked_pencil(button.get_label())
+    
+        # Reset all button borders
+        for name, btn in self.tools_button.items():
+            btn.get_style_context().remove_class("dotted-border")
+        
+        # Apply dotted border to the clicked button
+        button.get_style_context().add_class("dotted-border")
+
+        # Update CSS for dotted border
+        css_provider = Gtk.CssProvider()
+        css_data = b"""
+            .dotted-border {
+                border: 2px solid black;
+            }
+        """
+        css_provider.load_from_data(css_data)
+        Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), css_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER)
+
 
     def on_save_button_clicked(self, button):
         print("Сохранение изображения...")
@@ -268,4 +299,5 @@ class PaintView(Gtk.Window):
     def queue_draw(self):
         """Request redraw of the drawing area."""
         self.drawing_area.queue_draw()
-        
+            
+    
